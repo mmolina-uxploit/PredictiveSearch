@@ -85,11 +85,12 @@ Este patrón es esencial en aplicaciones modernas con interacción en tiempo rea
 ## Documentación
 
 Las decisiones arquitectónicas y de diseño están explicadas en detalle en:
+**[`Docs/`](PredictiveSearch/Docs/README.md)**.
 
-* **Docs/ARCHITECTURE.md**
+* **ARCHITECTURE.md**
   Describe la estructura del sistema, los límites entre capas y los trade-offs adoptados.
 
-* **Docs/TDD-AND-STATE-DRIVEN-DESIGN.md**
+* **TDD-AND-STATE-DRIVEN-DESIGN.md**
   Profundiza en cómo el diseño orientado a estados y pruebas guía la construcción de la feature.
 
 ---
