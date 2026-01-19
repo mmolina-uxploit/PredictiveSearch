@@ -1,25 +1,25 @@
-# Desarrollo Guiado por Tests (TDD) en `PredictiveSearch`
+# Desarrollo Guiado por Tests (TDD) en PredictiveSearch
 
-> Este documento explica cómo el **Desarrollo Guiado por Pruebas (TDD)** funciona como **herramienta de diseño** en un sistema gobernado por estado y concurrencia.  
-> Los tests no se usan aquí solo para verificar comportamiento, sino como **especificaciones ejecutables de decisiones de diseño**.
+> Este documento explica cómo el **Desarrollo Guiado por Pruebas (TDD)** funciona como una **herramienta de diseño** en un sistema gobernado por estado y concurrencia.
+> Los tests no se usan únicamente para verificar comportamiento, sino como **especificaciones ejecutables de decisiones arquitectónicas**.
 
 ---
 
 ## Rol del test en la arquitectura
 
-En `PredictiveSearch`, los tests cumplen un propósito de **documentación viva**:
+En PredictiveSearch, los tests cumplen un propósito de **documentación viva**:
 
-- Definen un **contrato observable mínimo**: estado inicial, evento ejecutado y estado resultante esperado.  
-- Delimitan transiciones válidas dentro del modelo de estado del `ViewModel`.  
-- Evitan depender de detalles de implementación, efectos colaterales o frameworks externos.  
+* definen un **contrato observable mínimo**: estado inicial, evento ejecutado y estado resultante esperado,
+* delimitan transiciones válidas dentro del modelo de estado del ViewModel,
+* evitan depender de detalles de implementación, efectos colaterales o frameworks externos.
 
 Cada test es, en esencia, un **caso de estudio ejecutable** que asegura que las decisiones arquitectónicas se mantengan coherentes.
 
 ---
 
-## Ejemplo conceptual: búsqueda predictiva
+## Ejemplo conceptual alineado al proyecto
 
-Supongamos la clase `PredictiveSearchViewModel`:
+Supongamos la clase central del sistema:
 
 ```swift
 @MainActor
@@ -30,6 +30,7 @@ final class PredictiveSearchViewModel: ObservableObject {
     func search(query: String) {
         searchTask?.cancel()
         state = .loading(query)
+
         searchTask = Task {
             do {
                 let results = try await repository.search(query: query)
@@ -43,59 +44,80 @@ final class PredictiveSearchViewModel: ObservableObject {
     }
 }
 ```
-Un test que describe el flujo esperado:
 
+Un test coherente con PredictiveSearch:
+
+```swift
 func testSearchDebounceAndCancellation() async {
     let repository = MockSearchRepository()
     let vm = PredictiveSearchViewModel(repository: repository)
 
-    await vm.search(query: "Rick")
-    await vm.search(query: "Morty") // cancela la búsqueda anterior
+    await vm.search(query: "Intención A")
+    await vm.search(query: "Intención B") // cancela la búsqueda anterior
 
-    XCTAssertEqual(vm.state, .loading("Morty"))
+    XCTAssertEqual(vm.state, .loading("Intención B"))
 }
 ```
-Qué demuestra este test:
 
-Cancelación explícita de tareas viejas
+---
 
-Estado determinista de la UI (ViewState)
+## Qué demuestra este test
 
-Comportamiento predecible sin lógica defensiva adicional en SwiftUI
+El test anterior establece de forma explícita:
 
-El test no valida la UI ni la red real; valida el contrato de transición de estado.
+* cancelación automática de tareas previas,
+* estado determinista de la UI mediante ViewState,
+* comportamiento predecible sin lógica defensiva adicional en SwiftUI.
 
-Conexión con Clean Architecture
+El test no valida la UI ni la red real.
+Valida el **contrato de transición de estado** definido por el proyecto.
 
-Los tests operan solo sobre el dominio y el ViewModel, sin depender de NetworkClient ni SwiftUI.
+---
 
-La lógica de presentación y la infraestructura se prueban mediante dobles controlados (mocks o fakes).
+## Conexión con Clean Architecture
 
-Cada transición de estado se convierte en una especificación ejecutable, que guía el diseño del dominio y del ViewModel.
+Los tests operan únicamente sobre el dominio y el ViewModel:
 
-Beneficios de TDD en PredictiveSearch
+* no dependen de NetworkClient,
+* no dependen de SwiftUI,
+* no requieren infraestructura real.
 
-Diseño guiado por intención: cada test define cómo debería comportarse el sistema, no solo cómo funciona.
+La lógica de presentación y la infraestructura se prueban mediante dobles controlados, como mocks o fakes.
 
-Prevención de bugs complejos: cancelaciones, debounce y concurrencia se gestionan antes de llegar a la UI.
+Cada transición de estado se convierte así en una **especificación ejecutable**, que guía el diseño del dominio y del ViewModel.
 
-Documentación viva: los tests explican decisiones de arquitectura de manera ejecutable.
+---
 
-Refactors seguros: el contrato de estado está siempre validado, incluso si cambian implementaciones internas.
+## Beneficios de TDD en PredictiveSearch
 
-Alcance
+El enfoque aporta ventajas concretas:
+
+* **diseño guiado por intención**: cada test define cómo debe comportarse el sistema,
+* **prevención de bugs complejos**: cancelaciones y concurrencia se resuelven antes de llegar a la UI,
+* **documentación viva**: los tests explican decisiones de arquitectura de forma ejecutable,
+* **refactors seguros**: el contrato de estado permanece validado ante cambios internos.
+
+---
+
+## Alcance actual
 
 Actualmente, los tests cubren principalmente:
 
-Flujo inicial de búsqueda y debounce
+* flujo inicial de búsqueda y debounce,
+* cancelación de búsquedas anteriores,
+* transiciones de estado en PredictiveSearchViewModel.
 
-Cancelación de búsquedas anteriores
+No se trata de una estrategia completa de testing de UI, sino de un **núcleo de diseño confiable** para futuras expansiones.
 
-Transiciones de estado en PredictiveSearchViewModel
+---
 
-No es una estrategia de testing completa de UI, pero sí un guía de diseño confiable para futuras expansiones.
+## Síntesis
 
-Síntesis
+En PredictiveSearch, TDD no es un accesorio ni una validación tardía.
+Es una parte integral del diseño.
 
-En PredictiveSearch, TDD no es un lujo ni un check de QA: es parte integral del diseño.
-Cada test representa una decisión de arquitectura y una garantía de que el flujo de estado y concurrencia se mantiene predecible, seguro y razonable.
+Cada test representa una decisión arquitectónica y una garantía de que el flujo de estado y concurrencia se mantiene:
+
+* predecible,
+* seguro,
+* razonable de evolucionar.
