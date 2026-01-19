@@ -1,0 +1,12 @@
+import Foundation
+
+// Contrato que define la frontera entre el Dominio y la Infraestructura (Teoría 04)
+// El método es 'async throws' para operar en un entorno de concurrencia (Teoría 05)
+public protocol MediaRepositoryProtocol {
+    /// Busca items de media basados en un término de búsqueda.
+    ///
+    /// - Parameter term: El término a buscar.
+    /// - Returns: Un array de `MediaItem`.
+    /// - Throws: Un error si la búsqueda falla. La implementación debe gestionar la cancelación.
+    func search(for term: String) async throws -> [MediaItem]
+}

@@ -1,0 +1,50 @@
+//
+//  MediaView.swift
+//  PredictiveSearch
+//
+//  Created by m47145 on 17/01/2026.
+//
+
+import SwiftUI
+
+struct MediaView: View {
+    @StateObject private var viewModel: MediaSearchViewModel
+    @State private var searchTerm: String = ""
+
+    init() {
+        _viewModel = StateObject(wrappedValue: MediaSearchViewModel(repository: MediaRepository()))
+    }
+
+    var body: some View {
+        NavigationView {
+            VStack {
+                TextField("Search for music...", text: $searchTerm)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                    .onChange(of: searchTerm) { oldValue, newValue in
+                        viewModel.searchTermChanged(to: newValue)
+                    }
+
+                List(viewModel.results) { item in
+                    HStack {
+                        AsyncImage(url: item.artworkURL) { image in
+                            image.resizable()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(width: 50, height: 50)
+                        .cornerRadius(8)
+
+                        VStack(alignment: .leading) {
+                            Text(item.title)
+                                .font(.headline)
+                            Text(item.artist)
+                                .font(.subheadline)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("iTunes Search")
+        }
+    }
+}

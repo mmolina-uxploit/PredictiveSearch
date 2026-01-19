@@ -1,0 +1,32 @@
+//
+//  MediaRepository.swift
+//  PredictiveSearch
+//
+//  Created by m47145 on 17/01/2026.
+//
+
+import Foundation
+
+struct MediaResponse: Decodable {
+    let results: [MediaItem]
+}
+
+class MediaRepository: MediaRepositoryProtocol {
+    private let baseURL = URL(string: "https://itunes.apple.com/search")!
+    
+    func search(for term: String) async throws -> [MediaItem] {
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: true)!
+        components.queryItems = [
+            URLQueryItem(name: "term", value: term),
+            URLQueryItem(name: "media", value: "music"),
+            URLQueryItem(name: "limit", value: "25")
+        ]
+        
+        let (data, _) = try await URLSession.shared.data(from: components.url!)
+        
+        let decoder = JSONDecoder()
+        let response = try decoder.decode(MediaResponse.self, from: data)
+        
+        return response.results
+    }
+}
